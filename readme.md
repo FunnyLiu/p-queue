@@ -1,5 +1,35 @@
 # p-queue [![Build Status](https://travis-ci.org/sindresorhus/p-queue.svg?branch=master)](https://travis-ci.org/sindresorhus/p-queue) [![codecov](https://codecov.io/gh/sindresorhus/p-queue/branch/master/graph/badge.svg)](https://codecov.io/gh/sindresorhus/p-queue)
 
+
+# 源码分析
+
+## 文件结构
+
+``` bash
+├── bench.ts
+├── source
+|  ├── index.ts
+|  ├── lower-bound.ts
+|  ├── options.ts
+|  ├── priority-queue.ts
+|  └── queue.ts
+
+directory: 1 file: 11
+
+ignored: directory (1)
+
+```
+
+## 外部模块依赖
+
+请在： http://npm.broofa.com?q=p-queue 查看
+
+## 内部模块依赖
+
+![img](./inner.svg)
+  
+
+
 > Promise queue with concurrency control
 
 Useful for rate-limiting async (or sync) operations. For example, when interacting with a REST API or when doing CPU/memory intensive tasks.
