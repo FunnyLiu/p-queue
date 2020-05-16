@@ -3,7 +3,7 @@ import {Queue, RunFunction} from './queue';
 export interface QueueAddOptions {
 	readonly [key: string]: unknown;
 }
-
+// 构造函数参数options接口
 export interface Options<QueueType extends Queue<RunFunction, QueueOptions>, QueueOptions extends QueueAddOptions> {
 	/**
 	Concurrency limit.

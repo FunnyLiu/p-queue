@@ -85,6 +85,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 		this.concurrency = options.concurrency!;
 		this._timeout = options.timeout;
 		this._throwOnTimeout = options.throwOnTimeout === true;
+		// autoStart决定了_isPaused的初始值
 		this._isPaused = options.autoStart === false;
 	}
 
@@ -144,9 +145,10 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 
 		return false;
 	}
-
+	// 尝试进行下一个，其返回false则不再继续执行下去了（start中逻辑）
 	private _tryToStartAnother(): boolean {
 		if (this._queue.size === 0) {
+			// 如果队列已经清空了
 			// We can clear the interval ("pause")
 			// Because we can redo it later ("resume")
 			if (this._intervalId) {
@@ -159,12 +161,13 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 
 			return false;
 		}
-
+		// 如果未暂停，则执行
 		if (!this._isPaused) {
 			const canInitializeInterval = !this._isIntervalPaused();
 			if (this._doesIntervalAllowAnother && this._doesConcurrentAllowAnother) {
+				// 触发active事件
 				this.emit('active');
-
+				//出队列，在出队列的同时，执行其run函数
 				this._queue.dequeue()!();
 				if (canInitializeInterval) {
 					this._initializeIntervalIfNeeded();
@@ -205,6 +208,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 	/**
 	Executes all queued functions until it reaches the limit.
 	*/
+	// while的调用_tryToStartAnother，知道其返回false
 	private _processQueue(): void {
 		// eslint-disable-next-line no-empty
 		while (this._tryToStartAnother()) {}
@@ -227,9 +231,11 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 	/**
 	Adds a sync or async task to the queue. Always returns a promise.
 	*/
+	// 增加队列元素
 	async add<TaskResultType>(fn: Task<TaskResultType>, options: Partial<EnqueueOptionsType> = {}): Promise<TaskResultType> {
 		return new Promise<TaskResultType>((resolve, reject) => {
 			const run = async (): Promise<void> => {
+				// 未决的promise数量+1
 				this._pendingCount++;
 				this._intervalCount++;
 
@@ -245,14 +251,15 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 							return undefined;
 						}
 					);
+					// 执行传入的promise
 					resolve(await operation);
 				} catch (error) {
 					reject(error);
 				}
-
+				//调用next	
 				this._next();
 			};
-
+			//将封装好的函数加入queue
 			this._queue.enqueue(run, options);
 			this._tryToStartAnother();
 		});
@@ -263,6 +270,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 
 	@returns A promise that resolves when all functions are resolved.
 	*/
+	// 通过promise.all包一层，一个个的调用this.add
 	async addAll<TaskResultsType>(
 		functions: ReadonlyArray<Task<TaskResultsType>>,
 		options?: EnqueueOptionsType
@@ -277,7 +285,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 		if (!this._isPaused) {
 			return this;
 		}
-
+		// 将暂停置为false
 		this._isPaused = false;
 
 		this._processQueue();
@@ -287,6 +295,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 	/**
 	Put queue execution on hold.
 	*/
+	//设置暂停
 	pause(): void {
 		this._isPaused = true;
 	}

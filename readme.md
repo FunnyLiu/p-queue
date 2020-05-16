@@ -8,11 +8,11 @@
 ``` bash
 ├── bench.ts
 ├── source
-|  ├── index.ts
-|  ├── lower-bound.ts
-|  ├── options.ts
-|  ├── priority-queue.ts
-|  └── queue.ts
+|  ├── index.ts - 保留对外的pQueue对象
+|  ├── lower-bound.ts - 一个针对索引的算法，保证新插入的元素不改动的原有队列顺序
+|  ├── options.ts - pQueue构造函数参数类型声明
+|  ├── priority-queue.ts - 内建的queue对象，可以支持外部传入并修改
+|  └── queue.ts - queue相关类型声明
 
 directory: 1 file: 11
 
