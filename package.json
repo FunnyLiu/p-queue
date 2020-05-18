@@ -42,6 +42,7 @@
 		"bluebird"
 	],
 	"dependencies": {
+		"@tomato-js/async": "0.0.17",
 		"eventemitter3": "^4.0.0",
 		"p-timeout": "^3.1.0"
 	},

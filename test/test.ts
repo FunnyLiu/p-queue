@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 import EventEmitter = require('eventemitter3');
+import { sleep } from '@tomato-js/async';
 import test from 'ava';
 import delay from 'delay';
 import inRange = require('in-range');
@@ -94,13 +95,61 @@ test('.add() - priority', async t => {
 	const result: number[] = [];
 	const queue = new PQueue({concurrency: 1});
 	queue.add(async () => result.push(1), {priority: 1});
-	queue.add(async () => result.push(0), {priority: 0});
-	queue.add(async () => result.push(1), {priority: 1});
-	queue.add(async () => result.push(2), {priority: 1});
+	queue.add(async () => result.push(2), {priority: 0});
 	queue.add(async () => result.push(3), {priority: 2});
-	queue.add(async () => result.push(0), {priority: -1});
+	queue.add(async () => result.push(4), {priority: 4});
+	queue.add(async () => result.push(5), {priority: 3});
+	queue.add(async () => result.push(6), {priority: -1});
 	await queue.onEmpty();
-	t.deepEqual(result, [1, 3, 1, 2, 0, 0]);
+	t.deepEqual(result, [1, 4, 5, 3, 2, 6]);
+});
+
+test('.add() - priority2', async t => {
+	const result: number[] = [];
+	const queue = new PQueue({concurrency: 1});
+	queue.add(async () => result.push(1));
+	queue.add(async () => result.push(2));
+	queue.add(async () => result.push(3));
+	queue.add(async () => result.push(4));
+	queue.add(async () => result.push(5));
+	queue.add(async () => result.push(6));
+	await queue.onEmpty();
+	t.deepEqual(result, [1, 2, 3, 4, 5, 6]);
+});
+
+
+test('.add() - priority3', async t => {
+	const result: number[] = [];
+	const queue = new PQueue({concurrency: 1});
+	// const queue = new PQueue();
+	queue.add(async () => {
+		await sleep(20);
+		result.push(1)
+	});
+	queue.add(async () => {
+		await sleep(90);
+		result.push(2)
+	});
+	queue.add(async () => {
+		await sleep(30);
+		result.push(3)
+	});
+	queue.add(async () => {
+		await sleep(40);
+		result.push(4)
+	});
+	queue.add(async () => {
+		await sleep(5000);
+		result.push(5)
+	});
+	queue.add(async () => {
+		await sleep(60);
+		result.push(6)
+	});
+	await queue.onEmpty();
+	t.deepEqual(result, [1,2,3,4,5,6]);
+
+
 });
 
 test('.sizeBy() - priority', async t => {
